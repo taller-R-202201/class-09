@@ -156,47 +156,54 @@ list.files("input/chip",full.names=T, recursive = T)
 paths = list.files("input/chip",full.names=T, recursive = TRUE) %>% unlist()
 
 #----------------------#
+## 1. Obtener rutas de los datos
+list.files("input/chip",full.names=T, recursive = T) 
+
+paths = list.files("input/chip",full.names=T, recursive = TRUE) %>% unlist()
+
+#----------------------#
 ## 2. Hacer ejemplo para una observacion
 
 ## 2.1. leer archivo
-
+df = import("input/chip/2019/11767600044K212410-1220191625694914330.xls") %>%
+     as_tibble()
 
 ## 2.2. obtener codigo-DANE 
-
+code = colnames(df)[1]
 
 ## 2.3. obtener tipo de inversion
-
-
+tipo="SALUD"
+df$...2
 ## 2.4. obtener valor
-
+valor = df %>% subset(`...2`==tipo) %>% .[,8]
 
 ## 2.5. consolidar informacion
-
+db = tibble(cod_dane=code , tipo_gasto=tipo , valor_gatso=valor)
 
 #----------------------#
 ## 3. Generalizar ejemplo en una función
-f_extrac = function(path,tipo_rubro){
+f_extrac = function(ruta,name_rubro){
   
-           ## 3.1. leer archivo
-          
-          
-           ## 3.2. obtener codigo-DANE 
-          
-          
-           ## 3.3. obtener tipo de inversion
-          
-          
-           ## 3.4. obtener valor
-          
-          
-           ## 3.5. consolidar informacion 
+  ## 2.1. leer archivo
+  df = import(ruta) %>%
+    as_tibble()
+  
+  ## 2.2. obtener codigo-DANE 
+  code = colnames(df)[1]
+  
+  ## 2.3. obtener tipo de inversion
+  tipo=name_rubro
+    
+  ## 2.4. obtener valor
+colnames(df)[2] = "var"
+  valor = df %>% subset(var==tipo) %>% .[,8] %>% unlist()
+  
+  ## 2.5. consolidar informacion
+  db = tibble(cod_dane=code , tipo_gasto=tipo , valor_gatso=valor)
            
-  
 ## 3.6 Retornar output
-
+return(db)
 }
-
-
-
-  
-  
+f_extrac(ruta = paths[35] , name_rubro = "SALUD")
+data = lapply(paths, function(x) f_extrac(ruta = x , name_rubro = "SALUD"))
+data = rbindlist(l = data , use.names = T)
